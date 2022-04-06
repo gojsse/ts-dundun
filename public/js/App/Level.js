@@ -1,0 +1,106 @@
+import { TileMap } from '../TileMap';
+import Cell from './Cell';
+class Level {
+    constructor(props) {
+        // TODO
+        this.items = {
+            key1: false
+        };
+        const { grid, name, vp } = props;
+        this.grid = grid;
+        this.name = name;
+        this.vp = vp;
+    }
+    draw(context) {
+        const { charX, charY } = this.getCurrentPosition('P');
+        this.grid
+            .filter((row, rowIndex) => {
+            return rowIndex >= (charY - this.vp.vPad) && rowIndex <= (charY + this.vp.vPad);
+        })
+            .map((row, rowIndex) => {
+            const v = this.getVPad(rowIndex, charY);
+            return row
+                .filter((character, cellIndex) => {
+                return cellIndex >= (charX - this.vp.hPad) && cellIndex <= (charX + this.vp.hPad);
+            })
+                .map((character, cellIndex) => {
+                const h = this.getHPad(cellIndex, charX);
+                const newCell = new Cell([h, v], character, this.vp);
+                newCell.draw(context);
+            });
+        });
+    }
+    getCurrentPosition(character) {
+        const charY = this.grid.findIndex(row => row.includes(character));
+        const charX = this.grid[charY].findIndex(c => c === character);
+        return { charX, charY };
+    }
+    getTargetPosition(direction, characterPosition) {
+        const [moveX, moveY] = direction;
+        const [currentX, currentY] = characterPosition;
+        let targetX = currentX;
+        let targetY = currentY;
+        // Vertical (y)
+        if (moveY !== 0) {
+            targetY = currentY + moveY;
+        }
+        // Horizontal (x)
+        if (moveX !== 0) {
+            targetX = currentX + moveX;
+        }
+        return { targetX, targetY };
+    }
+    getVPad(rowIndex, charY) {
+        let v = rowIndex * this.vp.blockSize;
+        for (let index = 0; index < this.vp.vPad; index++) {
+            if (charY === index) {
+                return (rowIndex + (this.vp.vPad - index)) * this.vp.blockSize;
+            }
+        }
+        return v;
+    }
+    getHPad(cellIndex, charX) {
+        let h = cellIndex * this.vp.blockSize;
+        for (let index = 0; index < this.vp.hPad; index++) {
+            if (charX === index) {
+                return (cellIndex + (this.vp.hPad - index)) * this.vp.blockSize;
+            }
+        }
+        return h;
+    }
+    moveCharacter(character, direction) {
+        const { charX, charY } = this.getCurrentPosition(character);
+        const { targetX, targetY } = this.getTargetPosition(direction, [charX, charY]);
+        // Stay within bounds of grid
+        if (targetX < 0 || targetY < 0 || targetX > this.grid[0].length - 1 || targetY > this.grid.length - 1) {
+            return;
+        }
+        const whatsThere = this.grid[targetY][targetX];
+        // Move to target position
+        if (whatsThere === ' ') {
+            this.grid[charY][charX] = ' ';
+            this.grid[targetY][targetX] = 'P';
+            return;
+        }
+        if (whatsThere in TileMap) {
+            // Pick up a key > change to pick 'something' up
+            if (whatsThere === 'K') {
+                this.items.key1 = true;
+                this.grid[charY][charX] = ' ';
+                this.grid[targetY][targetX] = 'P';
+            }
+            // Open door with a key
+            if (whatsThere === 'D' && this.items.key1 === true) {
+                this.grid[charY][charX] = ' ';
+                this.grid[targetY][targetX] = 'P';
+            }
+            if (whatsThere === '2') {
+                // this.inventory.key = true
+                // this.grid[charY][charX] = ' '
+                // this.grid[targetY][targetX] = 'P'
+            }
+        }
+    }
+}
+export default Level;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiTGV2ZWwuanMiLCJzb3VyY2VSb290IjoiLi4vc3JjLyIsInNvdXJjZXMiOlsiQXBwL0xldmVsLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBLE9BQU8sRUFBRSxPQUFPLEVBQUUsTUFBTSxZQUFZLENBQUE7QUFDcEMsT0FBTyxJQUFJLE1BQU0sUUFBUSxDQUFBO0FBRXpCLE1BQU0sS0FBSztJQVVQLFlBQVksS0FBMkM7UUFMdkQsT0FBTztRQUNQLFVBQUssR0FBRztZQUNKLElBQUksRUFBRSxLQUFLO1NBQ2QsQ0FBQTtRQUdHLE1BQU0sRUFBRSxJQUFJLEVBQUUsSUFBSSxFQUFFLEVBQUUsRUFBRSxHQUFHLEtBQUssQ0FBQTtRQUNoQyxJQUFJLENBQUMsSUFBSSxHQUFHLElBQUksQ0FBQTtRQUNoQixJQUFJLENBQUMsSUFBSSxHQUFHLElBQUksQ0FBQTtRQUNoQixJQUFJLENBQUMsRUFBRSxHQUFHLEVBQUUsQ0FBQTtJQUNoQixDQUFDO0lBRUQsSUFBSSxDQUFDLE9BQWlDO1FBQ2xDLE1BQU0sRUFBQyxLQUFLLEVBQUUsS0FBSyxFQUFDLEdBQUcsSUFBSSxDQUFDLGtCQUFrQixDQUFDLEdBQUcsQ0FBQyxDQUFBO1FBRW5ELElBQUksQ0FBQyxJQUFJO2FBQ0osTUFBTSxDQUFDLENBQUMsR0FBWSxFQUFFLFFBQWdCLEVBQUUsRUFBRTtZQUN2QyxPQUFPLFFBQVEsSUFBSSxDQUFDLEtBQUssR0FBRyxJQUFJLENBQUMsRUFBRSxDQUFDLElBQUksQ0FBQyxJQUFJLFFBQVEsSUFBSSxDQUFDLEtBQUssR0FBRyxJQUFJLENBQUMsRUFBRSxDQUFDLElBQUksQ0FBQyxDQUFBO1FBQ25GLENBQUMsQ0FBQzthQUNELEdBQUcsQ0FBQyxDQUFDLEdBQWlCLEVBQUUsUUFBZ0IsRUFBRSxFQUFFO1lBQ3pDLE1BQU0sQ0FBQyxHQUFHLElBQUksQ0FBQyxPQUFPLENBQUMsUUFBUSxFQUFFLEtBQUssQ0FBQyxDQUFBO1lBQ3ZDLE9BQU8sR0FBRztpQkFDTCxNQUFNLENBQUMs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

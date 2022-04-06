@@ -1,0 +1,4 @@
+class GUI {
+}
+export default GUI;
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiR1VJLmpzIiwic291cmNlUm9vdCI6Ii4uL3NyYy8iLCJzb3VyY2VzIjpbIkFwcC9HVUkudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBRUEsTUFBTSxHQUFHO0NBRVI7QUFFRCxlQUFlLEdBQUcsQ0FBQSJ9
