@@ -1,28 +1,45 @@
 export const TileMap = {
-    X: {
-        name: 'wall',
+    '_': {
+        name: '',
         color: 'black',
+        type: 'floor'
+    },
+    '0': {
+        name: '',
+        color: 'green',
         type: 'structure'
     },
-    P: {
-        name: 'player',
-        color: 'lime',
-        type: 'character'
+    '1': {
+        name: '',
+        color: 'blue',
+        type: 'structure'
     },
-    K: {
-        name: 'key',
+    'd': {
+        name: 'Stairs Down',
+        color: 'red',
+        type: 'trigger',
+        // position: [16, 16]
+    },
+    'u': {
+        name: 'Stairs Up',
+        color: 'orange',
+        type: 'trigger',
+        // position: [16, 16]
+    },
+    'k': {
+        name: 'Key',
         color: 'gold',
         type: 'item'
     },
-    D: {
-        name: 'door',
-        color: 'brown',
-        type: 'door',
-        key: 'K'
+    'l': {
+        name: 'Lock',
+        color: 'lime',
+        type: 'trigger'
     },
-    [' ']: {
-        name: 'space',
-        color: 'white',
-        type: 'space' 
-    }
+    '~': {
+        name: 'Water',
+        color: 'blue',
+        type: 'water',
+        position: [16, 16]
+    },
 }

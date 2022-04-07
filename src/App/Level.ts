@@ -1,129 +1,114 @@
-import { Grid, GridRow, XY, Characters, VP } from '../types'
+import { TileGrid, TileRow, TileCharacters, EventGrid, EventRow, EventCharacters, XY, VP } from '../types'
 import { TileMap } from '../TileMap'
 import Cell from './Cell'
 
+interface LevelInterface {
+    name: string,
+    tileGrid: TileGrid,
+    eventGrid: EventGrid,
+    vp: VP,
+    tileSet: HTMLImageElement
+}
+
 class Level {
-    name: string
-    grid: Grid
-    vp: VP
+    name
+    tileGrid
+    eventGrid
+    vp
+    tileSet
 
-    // TODO
-    items = {
-        key1: false
-    }
-
-    constructor(props: { grid: Grid, name: string, vp: VP }) {
-        const { grid, name, vp } = props
-        this.grid = grid
+    constructor(levelProps: LevelInterface) {
+        const { name, tileGrid, eventGrid, vp, tileSet } = levelProps
         this.name = name
+        this.tileGrid = tileGrid
+        this.eventGrid = eventGrid
         this.vp = vp
+        this.tileSet = tileSet
     }
 
     draw(context: CanvasRenderingContext2D) {
-        const {charX, charY} = this.getCurrentPosition('P')
+        const {charRow, charCol} = this.getCurrentPosition('@')
 
-        this.grid
-            .filter((row: GridRow, rowIndex: number) => {
-                return rowIndex >= (charY - this.vp.vPad) && rowIndex <= (charY + this.vp.vPad)
-            })
-            .map((row: Characters[], rowIndex: number) => {
-                const v = this.getVPad(rowIndex, charY)
-                return row
-                    .filter((character: Characters, cellIndex: number) => {
-                        return cellIndex >= (charX - this.vp.hPad) && cellIndex <= (charX + this.vp.hPad)
+        const rowRange = [
+            charRow - this.vp.rowPad,
+            charRow + this.vp.rowPad
+        ]
+
+        const colRange = [
+            charCol - this.vp.colPad,
+            charCol + this.vp.colPad
+        ]
+
+        this.tileGrid
+            .forEach((row: TileRow, rowIndex: number) => {
+                const y = (rowIndex - rowRange[0]) * this.vp.blockSize
+                row.forEach((character: TileCharacters, colIndex: number) => {
+                    const x = (colIndex - colRange[0]) * this.vp.blockSize
+                    const newCell = new Cell({
+                        position: [x, y],
+                        tileCharacter: character,
+                        eventCharacter: this.eventGrid[rowIndex][colIndex],
+                        vp: this.vp,
+                        tileSet: this.tileSet
                     })
-                    .map((character: Characters, cellIndex: number) => {
-                        const h = this.getHPad(cellIndex, charX)
-                        const newCell = new Cell([h, v], character, this.vp)
-                        newCell.draw(context)
-                    })
+                    newCell.draw(context)
+                })
             })
     }
 
-    getCurrentPosition(character: Characters) {
-        const charY = this.grid.findIndex(row => row.includes(character))
-        const charX = this.grid[charY].findIndex(c => c === character)
-        return { charX, charY }
+    getCurrentPosition(character: EventCharacters) {
+        const charRow = this.eventGrid.findIndex((row: EventRow) => row.includes(character))
+        const charCol = this.eventGrid[charRow].findIndex((c: EventCharacters) => c === character)
+        return { charRow, charCol }
     }
 
     getTargetPosition(direction: XY, characterPosition: XY) {
         const [moveX, moveY] = direction
-        const [currentX, currentY] = characterPosition
-        let targetX = currentX
-        let targetY = currentY
-
-        // Vertical (y)
-        if (moveY !== 0) {
-            targetY = currentY + moveY
-        }
-
-        // Horizontal (x)
-        if (moveX !== 0) {
-            targetX = currentX + moveX
-        }
-
-        return { targetX, targetY }
+        const [charCol, charRow] = characterPosition
+        let targetRow = moveY !== 0 ? charRow + moveY : charRow
+        let targetCol = moveX !== 0 ? charCol + moveX : charCol
+        return  { targetRow, targetCol }
     }
 
-    getVPad(rowIndex: number, charY: number) {
-        let v = rowIndex * this.vp.blockSize
-        for (let index = 0; index < this.vp.vPad; index++) {
-            if (charY === index) {
-                return (rowIndex + (this.vp.vPad - index)) * this.vp.blockSize
-            }
-        }
-        return v
-    }
-    
-    getHPad(cellIndex: number, charX: number) {
-        let h = cellIndex * this.vp.blockSize
-        for (let index = 0; index < this.vp.hPad; index++) {
-            if (charX === index) {
-                return (cellIndex + (this.vp.hPad - index)) * this.vp.blockSize
-            }
-        }
-        return h
-    }
-
-    moveCharacter(character: Characters, direction: XY) {
-        const {charX, charY} = this.getCurrentPosition(character)
-        const {targetX, targetY} = this.getTargetPosition(direction, [charX, charY])
+    moveCharacter(character: EventCharacters, direction: XY) {
+        const {charRow, charCol} = this.getCurrentPosition(character)
+        const {targetRow, targetCol} = this.getTargetPosition(direction, [charCol, charRow])
 
         // TODO change direction player is facing, even if it's just a variable
         // ...
 
-        // Stay within bounds of grid
-        if (targetX < 0 || targetY < 0 || targetX > this.grid[0].length - 1 || targetY > this.grid.length - 1) {
+        // Stay within bounds
+        if (targetCol < 0 || targetCol > this.eventGrid[0].length - 1 || targetRow < 0 || targetRow > this.eventGrid.length - 1) {
             return
         }
 
-        const whatsThere = this.grid[targetY][targetX]
+        const whatsThere = this.eventGrid[targetRow][targetCol]
 
         // Move to target position
         if (whatsThere === ' ') {
-            this.grid[charY][charX] = ' '
-            this.grid[targetY][targetX] = 'P'
+            this.eventGrid[charRow][charCol] = ' '
+            this.eventGrid[targetRow][targetCol] = '@'
             return
         }
 
         if (whatsThere in TileMap) {
-            // Pick up a key > change to pick 'something' up
-            if (whatsThere === 'K') {
-                this.items.key1 = true
-                this.grid[charY][charX] = ' '
-                this.grid[targetY][targetX] = 'P'
-            }
-            // Open door with a key
-            if (whatsThere === 'D' && this.items.key1 === true) {
-                this.grid[charY][charX] = ' '
-                this.grid[targetY][targetX] = 'P'
-            }
+        //     // Pick up a key > change to pick 'something' up
+        //     if (whatsThere === 'K') {
+        //         this.items.key1 = true
+        //         this.tileGrid[charY][charX] = ' '
+        //         this.tileGrid[targetY][targetX] = '@'
+        //     }
+        //     // Open door with a key
+        //     if (whatsThere === 'D' && this.items.key1 === true) {
+        //         this.tileGrid[charY][charX] = ' '
+        //         this.tileGrid[targetY][targetX] = '@'
+        //     }
 
-            if (whatsThere === '2') {
-                // this.inventory.key = true
-                // this.grid[charY][charX] = ' '
-                // this.grid[targetY][targetX] = 'P'
-            }
+        //     if (whatsThere === '2') {
+        //         // this.inventory.key = true
+        //         // this.grid[charY][charX] = ' '
+        //         // this.grid[targetY][targetX] = '@'
+        //     }
         }
     }
 }

@@ -1,72 +1,83 @@
-import { Grid, XY, VP, Inventory } from '../types'
+import { XY, VP, Inventory } from '../types'
+import { level1TileGrid, level1EventGrid } from '../data'
 import Level from './Level'
 
+type Panels = {
+    rightRows: number,
+    rightCols: number,
+    bottomRows: number,
+    bottomCols: number
+}
+
 class App {
-    canvas: HTMLCanvasElement
-    context: CanvasRenderingContext2D
+    canvas
+    context
+    tiles
+
+    // Viewport
+    vp: VP = {
+        rows: 6,
+        cols: 7,
+        rowPad: 3,
+        colPad: 3,
+        blockSize: 32
+    }
+
+    panels: Panels = {
+        rightRows: 9,
+        rightCols: 14,
+        bottomRows: 3,
+        bottomCols: 7
+    }
 
     currentMap: Level
     inventory: Inventory = {}
 
-    // Viewport
-    vp: VP = {
-        h: 7,
-        w: 7,
-        hPad: 3,
-        vPad: 3,
-        blockSize: 32
-    }
-
-    constructor(id: string) {
+    constructor(id: string, sourceId: string) {
         // Canvas
-        const canvas = document.getElementById(id) as HTMLCanvasElement
-        this.canvas = canvas
-        this.canvas.height = this.vp.blockSize * this.vp.h
-        this.canvas.width = this.vp.blockSize * this.vp.w
-        this.canvas.style.border = '4px solid blue'
+        this.canvas = document.getElementById(id) as HTMLCanvasElement
+        this.canvas.height = this.vp.blockSize * (this.vp.rows + 3)
+        this.canvas.width = this.vp.blockSize * (this.vp.cols + 7)
+        this.canvas.style.border = '1px solid gray'
 
         // Context
-        const context = canvas.getContext('2d') as CanvasRenderingContext2D
-        this.context = context
+        this.context = this.canvas.getContext('2d') as CanvasRenderingContext2D
 
-        const level1Grid: Grid = [
-            [' ', ' ', 'X', 'X', 'X', 'X', ' ', ' '],
-            [' ', 'P', ' ', 'X', ' ', ' ', ' ', ' '],
-            ['X', ' ', ' ', 'X', ' ', 'U', ' ', 'X'],
-            ['X', ' ', 'X', 'X', ' ', ' ', ' ', 'X'],
-            ['X', ' ', 'X', 'X', 'X', 'D', 'X', 'X'],
-            ['X', ' ', 'X', 'X', 'X', ' ', 'X', 'X'],
-            ['X', ' ', ' ', 'K', ' ', ' ', ' ', 'X'],
-            ['X', ' ', 'X', 'X', 'X', 'X', ' ', ' '],
-            ['X', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
-            ['X', 'X', 'X', 'X', 'X', 'X', 'X', ' '],
-            ['X', '2', ' ', 'X', 'X', 'X', 'X', ' '],
-            ['X', ' ', ' ', 'X', 'X', 'X', 'X', ' '],
-            ['X', ' ', ' ', 'X', 'X', 'X', 'X', ' '],
-            ['X', 'X', ' ', ' ', ' ', ' ', ' ', ' '],
-        ]
+        // Source Tiles
+        this.tiles = document.getElementById(sourceId) as HTMLImageElement
 
+        // Setup initial map
         const l1 = new Level({
             name: 'L1',
-            grid: level1Grid,
-            vp: this.vp
+            tileGrid: level1TileGrid,
+            eventGrid: level1EventGrid,
+            vp: this.vp,
+            tileSet: this.tiles
         })
         this.currentMap = l1
+
         this.canvas.addEventListener('keydown', this.createUserEvents(this.currentMap))
         this.redraw()
     }
 
     redraw = () => {
         requestAnimationFrame(this.redraw)
-        this.context.fillStyle = 'blue'
+        this.context.fillStyle = 'black'
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
-        
+                
         // TODO
+        // how to throttle map refresh rate
+        this.currentMap.draw(this.context)
+
+        // TODO
+        // move this stuff into separate class
         // this.gui.draw(this.context)
         // the GUI
-        
-        // TODO how to throttle map refresh rate
-        this.currentMap.draw(this.context)
+        this.context.fillStyle = 'gray'
+        // Right panel
+        this.context.fillRect(this.vp.cols * this.vp.blockSize, 0, this.panels.rightCols * this.vp.blockSize, this.panels.rightRows * this.vp.blockSize)
+        // Bottom panel
+        this.context.fillRect(0, this.vp.rows * this.vp.blockSize, this.panels.bottomCols * this.vp.blockSize, this.panels.bottomRows * this.vp.blockSize)
     }
 
     createUserEvents(currentMap: Level) {
@@ -88,12 +99,12 @@ class App {
                     direction = [1, 0]
                     break
                 case 'ArrowLeft':
-                case 'a':
+                case '_':
                     direction = [-1, 0]
                     break
             }
 
-            currentMap.moveCharacter('P', direction)
+            currentMap.moveCharacter('@', direction)
         }
     }
 }

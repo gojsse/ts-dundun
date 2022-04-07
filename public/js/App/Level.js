@@ -1,106 +1,87 @@
 import { TileMap } from '../TileMap';
 import Cell from './Cell';
 class Level {
-    constructor(props) {
-        // TODO
-        this.items = {
-            key1: false
-        };
-        const { grid, name, vp } = props;
-        this.grid = grid;
+    constructor(levelProps) {
+        const { name, tileGrid, eventGrid, vp, tileSet } = levelProps;
         this.name = name;
+        this.tileGrid = tileGrid;
+        this.eventGrid = eventGrid;
         this.vp = vp;
+        this.tileSet = tileSet;
     }
     draw(context) {
-        const { charX, charY } = this.getCurrentPosition('P');
-        this.grid
-            .filter((row, rowIndex) => {
-            return rowIndex >= (charY - this.vp.vPad) && rowIndex <= (charY + this.vp.vPad);
-        })
-            .map((row, rowIndex) => {
-            const v = this.getVPad(rowIndex, charY);
-            return row
-                .filter((character, cellIndex) => {
-                return cellIndex >= (charX - this.vp.hPad) && cellIndex <= (charX + this.vp.hPad);
-            })
-                .map((character, cellIndex) => {
-                const h = this.getHPad(cellIndex, charX);
-                const newCell = new Cell([h, v], character, this.vp);
+        const { charRow, charCol } = this.getCurrentPosition('@');
+        const rowRange = [
+            charRow - this.vp.rowPad,
+            charRow + this.vp.rowPad
+        ];
+        const colRange = [
+            charCol - this.vp.colPad,
+            charCol + this.vp.colPad
+        ];
+        this.tileGrid
+            .forEach((row, rowIndex) => {
+            const y = (rowIndex - rowRange[0]) * this.vp.blockSize;
+            row.forEach((character, colIndex) => {
+                const x = (colIndex - colRange[0]) * this.vp.blockSize;
+                const newCell = new Cell({
+                    position: [x, y],
+                    tileCharacter: character,
+                    eventCharacter: this.eventGrid[rowIndex][colIndex],
+                    vp: this.vp,
+                    tileSet: this.tileSet
+                });
                 newCell.draw(context);
             });
         });
     }
     getCurrentPosition(character) {
-        const charY = this.grid.findIndex(row => row.includes(character));
-        const charX = this.grid[charY].findIndex(c => c === character);
-        return { charX, charY };
+        const charRow = this.eventGrid.findIndex((row) => row.includes(character));
+        const charCol = this.eventGrid[charRow].findIndex((c) => c === character);
+        return { charRow, charCol };
     }
     getTargetPosition(direction, characterPosition) {
         const [moveX, moveY] = direction;
-        const [currentX, currentY] = characterPosition;
-        let targetX = currentX;
-        let targetY = currentY;
-        // Vertical (y)
-        if (moveY !== 0) {
-            targetY = currentY + moveY;
-        }
-        // Horizontal (x)
-        if (moveX !== 0) {
-            targetX = currentX + moveX;
-        }
-        return { targetX, targetY };
-    }
-    getVPad(rowIndex, charY) {
-        let v = rowIndex * this.vp.blockSize;
-        for (let index = 0; index < this.vp.vPad; index++) {
-            if (charY === index) {
-                return (rowIndex + (this.vp.vPad - index)) * this.vp.blockSize;
-            }
-        }
-        return v;
-    }
-    getHPad(cellIndex, charX) {
-        let h = cellIndex * this.vp.blockSize;
-        for (let index = 0; index < this.vp.hPad; index++) {
-            if (charX === index) {
-                return (cellIndex + (this.vp.hPad - index)) * this.vp.blockSize;
-            }
-        }
-        return h;
+        const [charCol, charRow] = characterPosition;
+        let targetRow = moveY !== 0 ? charRow + moveY : charRow;
+        let targetCol = moveX !== 0 ? charCol + moveX : charCol;
+        return { targetRow, targetCol };
     }
     moveCharacter(character, direction) {
-        const { charX, charY } = this.getCurrentPosition(character);
-        const { targetX, targetY } = this.getTargetPosition(direction, [charX, charY]);
-        // Stay within bounds of grid
-        if (targetX < 0 || targetY < 0 || targetX > this.grid[0].length - 1 || targetY > this.grid.length - 1) {
+        const { charRow, charCol } = this.getCurrentPosition(character);
+        const { targetRow, targetCol } = this.getTargetPosition(direction, [charCol, charRow]);
+        // TODO change direction player is facing, even if it's just a variable
+        // ...
+        // Stay within bounds
+        if (targetCol < 0 || targetCol > this.eventGrid[0].length - 1 || targetRow < 0 || targetRow > this.eventGrid.length - 1) {
             return;
         }
-        const whatsThere = this.grid[targetY][targetX];
+        const whatsThere = this.eventGrid[targetRow][targetCol];
         // Move to target position
         if (whatsThere === ' ') {
-            this.grid[charY][charX] = ' ';
-            this.grid[targetY][targetX] = 'P';
+            this.eventGrid[charRow][charCol] = ' ';
+            this.eventGrid[targetRow][targetCol] = '@';
             return;
         }
         if (whatsThere in TileMap) {
-            // Pick up a key > change to pick 'something' up
-            if (whatsThere === 'K') {
-                this.items.key1 = true;
-                this.grid[charY][charX] = ' ';
-                this.grid[targetY][targetX] = 'P';
-            }
-            // Open door with a key
-            if (whatsThere === 'D' && this.items.key1 === true) {
-                this.grid[charY][charX] = ' ';
-                this.grid[targetY][targetX] = 'P';
-            }
-            if (whatsThere === '2') {
-                // this.inventory.key = true
-                // this.grid[charY][charX] = ' '
-                // this.grid[targetY][targetX] = 'P'
-            }
+            //     // Pick up a key > change to pick 'something' up
+            //     if (whatsThere === 'K') {
+            //         this.items.key1 = true
+            //         this.tileGrid[charY][charX] = ' '
+            //         this.tileGrid[targetY][targetX] = '@'
+            //     }
+            //     // Open door with a key
+            //     if (whatsThere === 'D' && this.items.key1 === true) {
+            //         this.tileGrid[charY][charX] = ' '
+            //         this.tileGrid[targetY][targetX] = '@'
+            //     }
+            //     if (whatsThere === '2') {
+            //         // this.inventory.key = true
+            //         // this.grid[charY][charX] = ' '
+            //         // this.grid[targetY][targetX] = '@'
+            //     }
         }
     }
 }
 export default Level;
-//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiTGV2ZWwuanMiLCJzb3VyY2VSb290IjoiLi4vc3JjLyIsInNvdXJjZXMiOlsiQXBwL0xldmVsLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBLE9BQU8sRUFBRSxPQUFPLEVBQUUsTUFBTSxZQUFZLENBQUE7QUFDcEMsT0FBTyxJQUFJLE1BQU0sUUFBUSxDQUFBO0FBRXpCLE1BQU0sS0FBSztJQVVQLFlBQVksS0FBMkM7UUFMdkQsT0FBTztRQUNQLFVBQUssR0FBRztZQUNKLElBQUksRUFBRSxLQUFLO1NBQ2QsQ0FBQTtRQUdHLE1BQU0sRUFBRSxJQUFJLEVBQUUsSUFBSSxFQUFFLEVBQUUsRUFBRSxHQUFHLEtBQUssQ0FBQTtRQUNoQyxJQUFJLENBQUMsSUFBSSxHQUFHLElBQUksQ0FBQTtRQUNoQixJQUFJLENBQUMsSUFBSSxHQUFHLElBQUksQ0FBQTtRQUNoQixJQUFJLENBQUMsRUFBRSxHQUFHLEVBQUUsQ0FBQTtJQUNoQixDQUFDO0lBRUQsSUFBSSxDQUFDLE9BQWlDO1FBQ2xDLE1BQU0sRUFBQyxLQUFLLEVBQUUsS0FBSyxFQUFDLEdBQUcsSUFBSSxDQUFDLGtCQUFrQixDQUFDLEdBQUcsQ0FBQyxDQUFBO1FBRW5ELElBQUksQ0FBQyxJQUFJO2FBQ0osTUFBTSxDQUFDLENBQUMsR0FBWSxFQUFFLFFBQWdCLEVBQUUsRUFBRTtZQUN2QyxPQUFPLFFBQVEsSUFBSSxDQUFDLEtBQUssR0FBRyxJQUFJLENBQUMsRUFBRSxDQUFDLElBQUksQ0FBQyxJQUFJLFFBQVEsSUFBSSxDQUFDLEtBQUssR0FBRyxJQUFJLENBQUMsRUFBRSxDQUFDLElBQUksQ0FBQyxDQUFBO1FBQ25GLENBQUMsQ0FBQzthQUNELEdBQUcsQ0FBQyxDQUFDLEdBQWlCLEVBQUUsUUFBZ0IsRUFBRSxFQUFFO1lBQ3pDLE1BQU0sQ0FBQyxHQUFHLElBQUksQ0FBQyxPQUFPLENBQUMsUUFBUSxFQUFFLEtBQUssQ0FBQyxDQUFBO1lBQ3ZDLE9BQU8sR0FBRztpQkFDTCxNQUFNLENBQUMs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
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiTGV2ZWwuanMiLCJzb3VyY2VSb290IjoiLi4vc3JjLyIsInNvdXJjZXMiOlsiQXBwL0xldmVsLnRzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUNBLE9BQU8sRUFBRSxPQUFPLEVBQUUsTUFBTSxZQUFZLENBQUE7QUFDcEMsT0FBTyxJQUFJLE1BQU0sUUFBUSxDQUFBO0FBVXpCLE1BQU0sS0FBSztJQU9QLFlBQVksVUFBMEI7UUFDbEMsTUFBTSxFQUFFLElBQUksRUFBRSxRQUFRLEVBQUUsU0FBUyxFQUFFLEVBQUUsRUFBRSxPQUFPLEVBQUUsR0FBRyxVQUFVLENBQUE7UUFDN0QsSUFBSSxDQUFDLElBQUksR0FBRyxJQUFJLENBQUE7UUFDaEIsSUFBSSxDQUFDLFFBQVEsR0FBRyxRQUFRLENBQUE7UUFDeEIsSUFBSSxDQUFDLFNBQVMsR0FBRyxTQUFTLENBQUE7UUFDMUIsSUFBSSxDQUFDLEVBQUUsR0FBRyxFQUFFLENBQUE7UUFDWixJQUFJLENBQUMsT0FBTyxHQUFHLE9BQU8sQ0FBQTtJQUMxQixDQUFDO0lBRUQsSUFBSSxDQUFDLE9BQWlDO1FBQ2xDLE1BQU0sRUFBQyxPQUFPLEVBQUUsT0FBTyxFQUFDLEdBQUcsSUFBSSxDQUFDLGtCQUFrQixDQUFDLEdBQUcsQ0FBQyxDQUFBO1FBRXZELE1BQU0sUUFBUSxHQUFHO1lBQ2IsT0FBTyxHQUFHLElBQUksQ0FBQyxFQUFFLENBQUMsTUFBTTtZQUN4QixPQUFPLEdBQUcsSUFBSSxDQUFDLEVBQUUsQ0FBQyxNQUFNO1NBQzNCLENBQUE7UUFFRCxNQUFNLFFBQVEsR0FBRztZQUNiLE9BQU8sR0FBRyxJQUFJLENBQUMsRUFBRSxDQUFDLE1BQU07WUFDeEIsT0FBTyxHQUFHLElBQUksQ0FBQyxFQUFFLENBQUMsTUFBTTtTQUMzQixDQUFBO1FBRUQsSUFBSSxDQUFDLFFBQVE7YUFDUixPQUFPLENBQUMsQ0FBQyxHQUFZLEVBQUUsUUFBZ0IsRUFBRSxFQUFFO1lBQ3hDLE1BQU0sQ0FBQyxHQUFHLENBQUMsUUFBUSxH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
