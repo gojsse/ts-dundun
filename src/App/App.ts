@@ -1,4 +1,4 @@
-import { XY, VP, Inventory } from '../types'
+import { XY, VP, Inventory, Direction } from '../types'
 import { level1TileGrid, level1EventGrid } from '../data'
 import Level from './Level'
 
@@ -14,7 +14,7 @@ class App {
     context
     tiles
 
-    // Viewport
+    // Map screen (V)iew(P)ort
     vp: VP = {
         rows: 6,
         cols: 7,
@@ -23,6 +23,7 @@ class App {
         blockSize: 32
     }
 
+    // GUI
     panels: Panels = {
         rightRows: 9,
         rightCols: 14,
@@ -52,7 +53,8 @@ class App {
             tileGrid: level1TileGrid,
             eventGrid: level1EventGrid,
             vp: this.vp,
-            tileSet: this.tiles
+            tileSet: this.tiles,
+            playerDirection: 's'
         })
         this.currentMap = l1
 

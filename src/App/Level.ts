@@ -1,4 +1,4 @@
-import { TileGrid, TileRow, TileCharacters, EventGrid, EventRow, EventCharacters, XY, VP } from '../types'
+import { TileGrid, TileRow, TileCharacters, EventGrid, EventRow, EventCharacters, XY, VP, Direction } from '../types'
 import { TileMap } from '../TileMap'
 import Cell from './Cell'
 
@@ -8,6 +8,7 @@ interface LevelInterface {
     eventGrid: EventGrid,
     vp: VP,
     tileSet: HTMLImageElement
+    playerDirection: Direction
 }
 
 class Level {
@@ -16,14 +17,16 @@ class Level {
     eventGrid
     vp
     tileSet
+    playerDirection
 
     constructor(levelProps: LevelInterface) {
-        const { name, tileGrid, eventGrid, vp, tileSet } = levelProps
+        const { name, tileGrid, eventGrid, vp, tileSet, playerDirection } = levelProps
         this.name = name
         this.tileGrid = tileGrid
         this.eventGrid = eventGrid
         this.vp = vp
         this.tileSet = tileSet
+        this.playerDirection = playerDirection
     }
 
     draw(context: CanvasRenderingContext2D) {
@@ -49,7 +52,8 @@ class Level {
                         tileCharacter: character,
                         eventCharacter: this.eventGrid[rowIndex][colIndex],
                         vp: this.vp,
-                        tileSet: this.tileSet
+                        tileSet: this.tileSet,
+                        playerDirection: this.playerDirection
                     })
                     newCell.draw(context)
                 })
@@ -74,8 +78,15 @@ class Level {
         const {charRow, charCol} = this.getCurrentPosition(character)
         const {targetRow, targetCol} = this.getTargetPosition(direction, [charCol, charRow])
 
-        // TODO change direction player is facing, even if it's just a variable
-        // ...
+        if (direction[0] === -1) {
+            this.playerDirection = 'w'
+        } else if (direction[0] === 1) {
+            this.playerDirection = 'e'
+        } else if (direction[1] === -1) {
+            this.playerDirection = 'n'
+        } else if (direction[1] === 1) {
+            this.playerDirection = 's'
+        }
 
         // Stay within bounds
         if (targetCol < 0 || targetCol > this.eventGrid[0].length - 1 || targetRow < 0 || targetRow > this.eventGrid.length - 1) {
@@ -85,7 +96,7 @@ class Level {
         const whatsThere = this.eventGrid[targetRow][targetCol]
 
         // Move to target position
-        if (whatsThere === ' ') {
+        if (whatsThere !== 'X') {
             this.eventGrid[charRow][charCol] = ' '
             this.eventGrid[targetRow][targetCol] = '@'
             return
