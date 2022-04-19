@@ -1,0 +1,8 @@
+export const ItemList = {
+    ' ': {
+        name: '',
+        type: 'key',
+        xy: [0, 0],
+    },
+};
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiSXRlbUxpc3QuanMiLCJzb3VyY2VSb290IjoiLi4vc3JjLyIsInNvdXJjZXMiOlsiSXRlbUxpc3QudHMiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBVUEsTUFBTSxDQUFDLE1BQU0sUUFBUSxHQUFvQztJQUNyRCxHQUFHLEVBQUU7UUFDRCxJQUFJLEVBQUUsRUFBRTtRQUNSLElBQUksRUFBRSxLQUFLO1FBQ1gsRUFBRSxFQUFFLENBQUMsQ0FBQyxFQUFFLENBQUMsQ0FBQztLQUNiO0NBQ0osQ0FBQSJ9

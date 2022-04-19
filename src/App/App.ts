@@ -1,5 +1,5 @@
-import { XY, VP, Inventory, Direction } from '../types'
-import { level1TileGrid, level1EventGrid } from '../data'
+import { XY, VP, Inventory } from '../types'
+import Map001 from '../data/maps/001'
 import Level from './Level'
 
 type Panels = {
@@ -49,12 +49,10 @@ class App {
 
         // Setup initial map
         const l1 = new Level({
-            name: 'L1',
-            tileGrid: level1TileGrid,
-            eventGrid: level1EventGrid,
             vp: this.vp,
-            tileSet: this.tiles,
-            playerDirection: 's'
+            name: 'L1',
+            spriteSheet: this.tiles,
+            gridLayers: Map001,
         })
         this.currentMap = l1
 
@@ -106,7 +104,7 @@ class App {
                     break
             }
 
-            currentMap.moveCharacter('@', direction)
+            currentMap.moveCharacter(direction)
         }
     }
 }
