@@ -6,6 +6,7 @@ interface EventInterface {
     name: string
     type: EventTypes
     dialog: string[]
+    sfx?: string
     xy: [number, number]
 }
 
@@ -32,6 +33,7 @@ export const EventList: Record<EventKeys, EventInterface> = {
         name: 'Floor Switch',
         type: 'trigger',
         dialog: ['You stepped on a trigger'],
+        sfx: 'sfx_item_drop.wav',
         xy: [2, 5]
     },
     'u': {

@@ -3,6 +3,7 @@ import { ItemList } from '../data/ItemList'
 import { CharList } from '../data/CharList'
 import { EventList } from '../data/EventList'
 import Cell from './Cell'
+import SFX from './SFX'
 
 interface LevelInterface {
     name: string,
@@ -118,6 +119,12 @@ class Level {
 
         if (whatEventAtRowCol !== ' ') {
             console.log(EventList[whatEventAtRowCol].dialog[0])
+
+            const { sfx } = EventList[whatEventAtRowCol]
+            if (sfx) {
+                const sound = new SFX({ src: sfx })
+                sound.play()
+            }
         }
 
         if (whatsItemAtRowCol !== ' ') {
