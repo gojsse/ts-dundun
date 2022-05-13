@@ -1,20 +1,20 @@
-import { EventKeys } from '../types'
+import { ActionKeys } from '../types'
 
-type EventTypes = ' ' | 'trigger' | 'stairs'
+type ActionTypes = ' ' | 'trigger' | 'stairs'
 
-interface EventInterface {
+interface ActionInterface {
     name: string
-    type: EventTypes
+    type: ActionTypes
     dialog: string[]
     sfx?: string
     xy: [number, number]
 }
 
-export const EventList: Record<EventKeys, EventInterface> = {
+export const ActionList: Record<ActionKeys, ActionInterface> = {
     ' ': {
         name: ' ',
         type: ' ',
-        dialog: ['an event'],
+        dialog: ['an action'],
         xy: [-1, -1]
     },
     'b': {

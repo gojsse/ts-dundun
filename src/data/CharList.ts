@@ -13,13 +13,17 @@ export const CharList: Record<CharKeys, CharInterface> = {
     ' ': {
         name: ' ',
         type: ' ',
-        dialog: ['???'],
+        dialog: [
+            '???'
+        ],
         xy: [-1, -1]
     },
     '@': {
         name: 'Player',
         type: ' ',
-        dialog: ['Me'],
+        dialog: [
+            'Me'
+        ],
         xy: [-1, -1]
     },
     'S': {

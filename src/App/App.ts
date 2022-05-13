@@ -52,7 +52,7 @@ class App {
             vp: this.vp,
             name: 'L1',
             spriteSheet: this.tiles,
-            gridLayers: Map001,
+            grid: Map001,
         })
         this.currentMap = l1
 
@@ -64,14 +64,9 @@ class App {
         requestAnimationFrame(this.redraw)
         this.context.fillStyle = 'black'
         this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
-                
-        // TODO
-        // how to throttle map refresh rate
+
         this.currentMap.draw(this.context)
 
-        // TODO
-        // move this stuff into separate class
-        // this.gui.draw(this.context)
         // the GUI
         this.context.fillStyle = 'gray'
         // Right panel

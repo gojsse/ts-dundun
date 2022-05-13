@@ -1,17 +1,14 @@
-import { TileKeys, EventKeys, ItemKeys, CharKeys, XY, VP, Direction } from '../types'
-import { TileList } from '../data/TileList'
+import { GridCell, XY, VP, Direction } from '../types'
+import { BgList } from '../data/BgList'
 import { ItemList } from '../data/ItemList'
-import { CharList} from '../data/CharList'
-import { EventList } from '../data/EventList'
+import { CharList } from '../data/CharList'
+import { ActionList } from '../data/ActionList'
 
 interface CellInterface {
     vp: VP
     spriteSheet: HTMLImageElement
     position: XY,
-    bgTileKey: TileKeys,
-    itemKey: ItemKeys,
-    eventKey: EventKeys,
-    char?: [CharKeys, Direction]
+    tileStack: GridCell
 }
 
 class Cell {
@@ -20,20 +17,21 @@ class Cell {
     x
     y
     bgTileXy: XY = [-1, -1]
-    eventTileXy: XY = [-1, -1]
+    actionTileXy: XY = [-1, -1]
     itemTileXy: XY = [-1, -1]
     charTileXy: XY = [-1, -1]
 
-    constructor({ vp, spriteSheet, position, bgTileKey, itemKey, eventKey, char }: CellInterface) {
+    constructor({ vp, spriteSheet, position, tileStack }: CellInterface) {
         const [x, y] = position
+        const { bg, item, action, char } = tileStack
         this.x = x
         this.y = y
         this.vp = vp
         this.spriteSheet = spriteSheet
 
-        this.bgTileXy = TileList[bgTileKey].xy
-        this.eventTileXy = EventList[eventKey].xy
-        this.itemTileXy = ItemList[itemKey].xy
+        this.bgTileXy = BgList[bg].xy
+        this.actionTileXy = ActionList[action].xy
+        this.itemTileXy = ItemList[item].xy
 
         if (char) {
             const [charTileKey, charDirection] = char
@@ -55,7 +53,7 @@ class Cell {
     draw(context: CanvasRenderingContext2D) {
         const { blockSize } = this.vp
         const [sourceX, sourceY] = this.bgTileXy
-        const [eventSourceX, eventSourceY] = this.eventTileXy
+        const [actionSourceX, actionSourceY] = this.actionTileXy
         const [itemSourceX, itemSourceY] = this.itemTileXy
         const [charSourceX, charSourceY] = this.charTileXy
 
@@ -68,8 +66,8 @@ class Cell {
         }
 
         // Draw event tile
-        if (eventSourceX > -1 && eventSourceY > -1) {
-            context.drawImage(this.spriteSheet, eventSourceX * 32, eventSourceY * 32, 32, 32, this.x, this.y, blockSize, blockSize)
+        if (actionSourceX > -1 && actionSourceY > -1) {
+            context.drawImage(this.spriteSheet, actionSourceX * 32, actionSourceY * 32, 32, 32, this.x, this.y, blockSize, blockSize)
         }
 
         // Draw cell item

@@ -17,13 +17,13 @@ export const ItemList: Record<ItemKeys, ItemInterface> = {
         xy: [-1, -1],
     },
     'b': {
-        name: '',
+        name: 'Bed',
         type: 'bed',
         info: 'Zzzzz',
         xy: [1, 4],
     },
     'H': {
-        name: '',
+        name: 'Heart',
         type: 'heart',
         info: 'You are stronger',
         xy: [0, 3],

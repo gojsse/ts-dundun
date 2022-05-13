@@ -1,15 +1,15 @@
-import { TileKeys } from '../types'
+import { BgKeys } from '../types'
 
-type TileTypes = 'floor' | 'water' | 'block' | 'trigger' | 'item'
+type BgTypes = 'floor' | 'water' | 'block' | 'trigger' | 'item'
 
-interface TileInterface {
+interface BgInterface {
     name: string
     color: string
-    type: TileTypes
+    type: BgTypes
     xy: [number, number]
 }
 
-export const TileList: Record<TileKeys, TileInterface> = {
+export const BgList: Record<BgKeys, BgInterface> = {
     ' ': {
         name: '',
         color: 'black',
@@ -20,13 +20,13 @@ export const TileList: Record<TileKeys, TileInterface> = {
         name: '',
         color: 'black',
         type: 'floor',
-        xy: [4, 8],
+        xy: [5, 8],
     },
     '~': {
-        name: 'Water',
-        color: 'blue',
-        type: 'water',
-        xy: [5, 8],
+        name: '',
+        color: 'black',
+        type: 'floor',
+        xy: [6, 8],
     },
     '*': {
         name: '',
